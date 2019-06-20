@@ -24,8 +24,19 @@
 	docker create network jupyterhub(docker network name)
 4. Build the dockerfile as docker-codehub:v6 
 5. Now run the jupyterhub using command,
-	docker run -p 8000:8000 -v /home/manshi/docker-workspace/working-codehub-prod/codehub-dockerspawner-nbgrader/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py -v /var/run/docker.sock:/var/run/docker.sock --net jupyterhub --name jupyterhub docker-codehub:v6
+	docker run -p 8000:8000 -v /home/manshi/docker-workspace/working-codehub-prod/codehub-dockerspawner-nbgrader/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py -v /var/run/docker.sock:/var/run/docker.sock --net jupyterhub --name jupyterhub docker-codehub:v7
+
+## Running mysql in docker container
+1. Run mysql in docker container within same docker network as jupyterhub
+2. Add pymysql/mysql-connector in jupyterhub image
+    pip install pymysql
+    or
+    pip install mysql-connector-python
+3.
 
 
+## All stable images
+1. jupyterhub : docker-codehub:v7
+2. jupyter-notebook: jupyter/base-notebook:v9 (instructor, v8 student) recent version:10
 
 

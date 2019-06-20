@@ -1,0 +1,132 @@
+
+
+Ref link:
+1. https://medium.com/coderscorner/connecting-to-mysql-through-docker-997aa2c090cc
+2. https://severalnines.com/blog/mysql-docker-containers-understanding-basics
+3. https://pynative.com/python-mysql-database-connection/
+
+## local installation and use mysql-connector in python code
+1. sudo apt-get update && sudo apt-get install mysql-server
+2. Check Mysql status
+    systemctl status mysql.service
+3. Use mysql
+    mysql -u root -p
+4. mysql>create database jupyterhub_test;
+   mysql>use databse jupyterhub_test;
+5. pip insatll mysql-connector (for python code)
+6. python python_code.py
+
+7. Also to see the port used my mysql locally
+    sudo netstat -nlpt |grep 3306
+
+    To stop the mysql server
+    sudo service mysql stop
+    To start the mysql server again
+    sudo service mysql start
+
+
+## Steps to run default Mysql server without password  
+1. pull mysql-server
+	docker pull mysql/mysql-server:latest
+2. run the image as container 
+	docker run --name=mysql01 -d mysql/mysql-server:latest
+3. when mysql is deployed in a container it automatically generates password
+	docker logs -f [continer_id/container_name]
+4. now, login to the container
+	docker exec -it mysql01 mysql -uroot -p
+5. if root password is generated use root password like after logginig the container
+	0HKoBXIdqymAB5@K8uMyhOxID!@
+6. Or, after first login just reset password using ALTER USER statemen before executing any statement
+	ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass';
+
+# Some useful commands
+
+1. GET IPAddress mysql container
+    docker inspect test-mysql | grep IPAddress
+2. Link mysql container with another container
+    docker run --detach --name test-wordpress --link test-mysql:mysql wordpress
+3. To verify if it's linked correctly,
+    docker exec -it test-wordpress bash
+4. cat /etc/hosts
+
+    172.17.0.22    0cb9f4152022
+    127.0.0.1    localhost
+    ::1    localhost ip6-localhost ip6-loopback
+    fe00::0    ip6-localnet
+    ff00::0    ip6-mcastprefix
+    ff02::1    ip6-allnodes
+    ff02::2    ip6-allrouters
+    172.17.0.21    mysql 0a7aa1cf196e test-mysql
+
+## Syntax for the Mysql database ###
+1. Create database : mysql> create database [database_name];
+2. Use database : mysql> use [database_name];
+3. Create table : create table [table_name];
+4. Insert data in the table
+5. Delete data in the table
+6. Update data in the table
+
+## Accessing Mysql through web Interface
+
+1.  Pull MySql image from docker hub. Following command will pull the latest mysql image.
+    docker pull mysql:5 (mysql:latest version has issue with root user)
+
+    Note: Another solution as indicated by github link mentioned above, is to connect interactively to MySQL 8.0 running container,
+    edit /etc/mysql/my.cnf to set default authentication mode to native, commit the container and restart MySQL or the container
+
+2. Run a container from this image. ‘-name’ gives a name to the container. ‘ -e’ specifies run time variables you need to set.
+    Set the password for the MySQL root user using ‘MYSQL_ROOT_PASSWORD’. ‘-d’ tells the docker to run the container in background.
+
+    docker run --name=testsql -e MYSQL_ROOT_PASSWORD=mysql123 -d mysql:5
+
+   (Note: If you are planning to connect to MySql container from your Windows host don’t forget to map the ports when running MySql container:
+     docker run --name=testsql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql123 -d mysql:5 )
+    port1: host port in webbrowser
+    port2: application port in hardware/tcp
+
+3. Then check the status of the container by issuing, ‘docker ps’ command
+    docker ps
+4. To checkout the logs of the running container use the fdoollowing command
+    docker logs testsql
+5. Find the IP of the container using following. Check out the “IPAddress” from the output, this will tell you the ip address.
+    docker inspect testsql
+6. Now you should be able to connect to MySQL using this ip address on port 3306.
+7. phpMyAdmin gives us a web interface to access MySQL database, Pull phpMyAdmin image from docker hub
+    docker pull phpmyadmin/phpmyadmin
+8. To link our existing MySQL container with phpMyAdmin application use the following.
+    docker run --name myadmin -d --link testsql:db -p 8080:80 phpmyadmin/phpmyadmin
+9. That’s it! Now open up a browser and go to ‘http://localhost:8080/’.
+
+10. Use the username as ‘root’ and give the password that you set earlier for ‘‘MYSQL_ROOT_PASSWORD’ and you should be able to login and manage your mysql database through phpMyAdmin.
+
+
+## Acess mysql from the mysql container
+1. docker ps to see the name/containerid of mysql container
+2. docker exec -it containerid/name bash
+3. To connect the mysql, execute
+    mysql -p
+4. Enter password:mysql123 and start using mysql within container
+
+## Access mysql from docker container using mysql-client in host
+1. mysql -uroot -pmysql123 --host 172.20.0.2 -P 3306
+######################################################################################################
+## RUN mysql in container with same docker network of jupyterhub
+1. docker run --name=testsql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mysql123 --net jupyterhub -d mysql:5
+## RUN phpmyadmim in container with same docker network of jupyterhub
+1. docker run --name myadmin -d --link testsql:db --net jupyterhub -p 8080:80 phpmyadmin/phpmyadmin(link doesnot work so far)
+## RUN jupyterhub in container with same docker network of jupyterhub
+1. docker run -p 8000:8000 -v /home/manshi/docker-workspace/working-codehub-prod/codehub-dockerspawner-extension-nbgrader/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py -v /var/run/docker.sock:/var/run/docker.sock --net jupyterhub --name jupyterhub docker-codehub:v7
+######################################################################################################
+## Use mysql in the jupyterhub in the place of SQlite
+
+1. username : root (default is root)
+2. password : mysql123 (password set to the root user)
+3. host name : server_name/IPAddress in which MySQL is running. If runnig on localhost use localhost or IP 127.0.0.0 else IPAddress of the mysql container
+4. database name: database name to which you want to connect, here i used jupyterhub_db for this configuration
+5. DB_RRL in Jupyterhub config : 'mysql+pymysql://root:mysql123@172.20.0.2:3306/jupyterhub_db'
+
+
+## When  Error starting userland proxy: listen tcp 0.0.0.0:3306: bind: address already in use.
+1. sudo netstat -nlpt |grep 3306
+2. sudo service mysql stop
+

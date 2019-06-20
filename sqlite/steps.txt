@@ -1,0 +1,8 @@
+
+
+### STEPS ###
+1. Install SQlite Browser
+    sudo add-apt-repository ppa:linuxgndu/sqlitebrowser-testing
+    sudo apt-get update && sudo apt-get install sqlitebrowser
+2. Make sqlite3 connection
+3. Create tables to test the connection

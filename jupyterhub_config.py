@@ -21,7 +21,7 @@ c.JupyterHub.hub_connect_ip = 'jupyterhub'
 
 # pick a docker image. This should have the same version of jupyterhub
 # in it as our Hub.
-c.DockerSpawner.image = 'jupyter/base-notebook:v7'
+c.DockerSpawner.image = 'jupyter/base-notebook:v9'
 
 # tell the user containers to connect to our docker network
 c.DockerSpawner.network_name = 'jupyterhub'
@@ -46,3 +46,13 @@ host_dir = '/home/manshi/docker-workspace/working-codehub-prod/codehub-dockerspa
 # notebook directory in the container
 
 c.DockerSpawner.volumes = {"/home/manshi/docker-workspace/working-codehub-prod/codehub-dockerspawner-nbgrader/notebook-data/{username}": {"bind": "/home/jovyan/work/course101", "mode": "rw"}}
+
+# replace Mysql inplace of SQlite database, can either use pymysql or mysql connector for connecting to mysql database
+# Incase you want to use pymysql
+#c.JupyterHub.db_url = 'mysql+mysqlconnector://{}:{}@{}/{}{}'.format("root","mysql123","localhost","jupyterhub_db","3306") or  c.JupyterHub.db_url = 'mysql+pymysql://root:mysql123@172.20.0.2:3306/jupyterhub_db'
+# Incase you want to youse mysqlconnector
+c.JupyterHub.db_url = 'mysql+mysqlconnector://root:mysql123@172.20.0.2:3306/jupyterhub_db'
+
+
+## prespawn hook to copy the assignments from different course.
+
